@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import api.iam.user.domain.request.AddUserRequest;
 import api.iam.user.domain.request.UpdateUserRequest;
 import api.iam.user.domain.response.UserResponse;
-import api.shared.domain.application.PageService;
+import api.shared.application.PageService;
 
 public interface UserService {
 

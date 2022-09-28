@@ -24,8 +24,8 @@ import api.iam.user.application.UserService;
 import api.iam.user.domain.request.AddUserRequest;
 import api.iam.user.domain.request.UpdateUserRequest;
 import api.iam.user.domain.response.UserResponse;
+import api.shared.application.PageService;
 import api.shared.domain.Builder;
-import api.shared.domain.application.PageService;
 import api.shared.infrastructure.PaginationConstant;
 
 @RestController
