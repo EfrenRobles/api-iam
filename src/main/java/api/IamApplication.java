@@ -1,4 +1,4 @@
-package api.iam;
+package api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,11 +6,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import api.shared.infrastructure.config.EnvConfig;
 
 @SpringBootApplication
-public class ApiApplication {
+public class IamApplication {
 
     public static void main(String[] args) {
         EnvConfig.setProperty(
-            SpringApplication.run(ApiApplication.class, args).getEnvironment()
+            SpringApplication.run(IamApplication.class, args).getEnvironment()
         );
     }
 

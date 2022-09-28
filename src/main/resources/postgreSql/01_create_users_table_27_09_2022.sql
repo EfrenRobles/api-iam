@@ -1,6 +1,6 @@
 CREATE TABLE users (
 	user_id uuid NOT NULL,
-	user_first_nale varchar NOT NULL,
+	user_first_name varchar NOT NULL,
 	user_last_name varchar NULL,
 	user_email varchar NOT NULL,
 	user_password varchar NOT NULL,
