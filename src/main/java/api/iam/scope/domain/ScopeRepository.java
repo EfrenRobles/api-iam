@@ -1,0 +1,17 @@
+package api.iam.scope.domain;
+
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+public interface ScopeRepository {
+
+    public Page<Scope> findAll(Pageable pageable, Scope scope);
+
+    public Scope findByScopeId(UUID scopeId);
+
+    public Scope save(Scope scope) throws Exception;
+
+    public void delete(Scope scope) throws Exception;
+}
