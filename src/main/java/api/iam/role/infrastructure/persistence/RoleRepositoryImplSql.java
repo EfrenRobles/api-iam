@@ -46,7 +46,7 @@ public class RoleRepositoryImplSql implements DomainPersistence {
         List<Predicate> conditions = new ArrayList<>();
 
         if (role.getRoleName() != null) {
-            conditions.add(criteriaBuilder.equal(root.get("roleName"), role.getRoleName()));
+            conditions.add(criteriaBuilder.like(root.get("roleName"), "%" + role.getRoleName() + "%"));
         }
 
         criteriaQuery.where(conditions.toArray(new Predicate[conditions.size()]));
