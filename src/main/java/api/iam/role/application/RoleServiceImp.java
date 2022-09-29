@@ -49,7 +49,7 @@ public class RoleServiceImp implements RoleService {
     public ResponseEntity<?> getAllRole(Pageable pageable, RoleResponse data) {
 
         Role role = Builder.set(Role.class)
-            .with(r -> r.setRoleName(data.getRoleName()))
+            .with(r -> r.setRoleName(data.getRoleName().toUpperCase()))
             .build();
 
         Page<Role> roles = roleRepository.findAll(pageable, role);
@@ -77,7 +77,7 @@ public class RoleServiceImp implements RoleService {
 
         Role role = Builder.set(Role.class)
             .with(u -> u.setRoleId(UUID.randomUUID()))
-            .with(u -> u.setRoleName(data.getRoleName()))
+            .with(u -> u.setRoleName(data.getRoleName().toUpperCase()))
             .build();
 
         role = roleRepository.save(role);
@@ -101,7 +101,7 @@ public class RoleServiceImp implements RoleService {
         }
 
         if (data.getRoleName() != null && !data.getRoleName().equalsIgnoreCase(role.getRoleName())) {
-            role.setRoleName(data.getRoleName());
+            role.setRoleName(data.getRoleName().toUpperCase());
             needUpdate = true;
         }
 
