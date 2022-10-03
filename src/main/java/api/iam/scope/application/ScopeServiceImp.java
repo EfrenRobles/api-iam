@@ -7,8 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCrypt;
-
 import api.shared.domain.Builder;
 import api.shared.domain.exception.ServiceException;
 import api.shared.domain.response.OnResponse;
@@ -49,11 +47,11 @@ public class ScopeServiceImp implements ScopeService {
     public ResponseEntity<?> getAllScope(Pageable pageable, ScopeResponse data) {
 
         Builder<Scope> builder = Builder.set(Scope.class);
-        
+
         if (data.getScopeName() != null) {
             builder.with(r -> r.setScopeName(data.getScopeName().toUpperCase()));
         }
-        
+
         Scope scope = builder.build();
 
         Page<Scope> scopes = scopeRepository.findAll(pageable, scope);
@@ -74,6 +72,20 @@ public class ScopeServiceImp implements ScopeService {
             .build();
 
         return OnResponse.onSuccessPagination(result, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<?> getScopeInScopeName(List<String> scopeList) throws Exception {
+
+        // Using List<?> to avoid the warning on scopeList.removeAll(scope);
+        List<?> scope = scopeRepository.findScopeInScopeName(scopeList);
+        scopeList.removeAll(scope);
+
+        if (scopeList.size() > 0) {
+            throw new ServiceException("The scope(s): " + scopeList.toString() + " do(es) not exist");
+        }
+
+        return OnResponse.onSuccess(scopeList, HttpStatus.OK);
     }
 
     @Override
