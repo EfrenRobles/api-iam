@@ -1,6 +1,5 @@
 package api.iam.role.infrastructure.persistence;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -12,12 +11,14 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import api.shared.domain.Logger;
@@ -90,7 +91,7 @@ public class RoleRepositoryImplSql implements DomainPersistence {
             if (e.getMessage().contains("constraint [roles_un]")) {
                 return null;
             }
-            
+
             throw new RepositoryException("Internal Server Error");
         }
     }
