@@ -18,6 +18,7 @@ import api.iam.user.domain.request.AddUserRequest;
 import api.iam.user.domain.request.UpdateUserRequest;
 import api.iam.user.domain.response.UserResponse;
 import api.iam.userclient.application.UserClientService;
+import api.iam.userclient.domain.response.UserClientResponse;
 
 public class UserServiceImp implements UserService {
 
@@ -109,9 +110,9 @@ public class UserServiceImp implements UserService {
             throw new ServiceException("The user email is already registered");
         }
 
-        ResponseEntity<?> response = userClientService.updateUserClient(data);
+        UserClientResponse response = userClientService.updateUserClient(data);
 
-        if (response.getBody().toString().contains("data=null")) {
+        if (response == null) {
 
             return mapToUserDto(user);
         }
@@ -119,14 +120,14 @@ public class UserServiceImp implements UserService {
         final User userFinal = user;
 
         return Builder.set(UpdateUserRequest.class)
-            .with(u -> u.setUserId(data.getUserId()))
-            .with(u -> u.setClientId(data.getClientId()))
-            .with(u -> u.setRoleId(data.getRoleId()))
+            .with(u -> u.setUserId(userFinal.getUserId()))
+            .with(u -> u.setClientId(response.getClientId()))
+            .with(u -> u.setRoleId(response.getRoleId()))
             .with(u -> u.setUserFirstName(userFinal.getUserFirstName()))
             .with(u -> u.setUserLastName(userFinal.getUserLastName()))
             .with(u -> u.setUserEmail(userFinal.getUserEmail()))
             .with(u -> u.setUserPassword("Secret"))
-            .with(u -> u.setScopes(data.getScopes()))
+            .with(u -> u.setScopes(response.getScopes()))
             .build();
     }
 

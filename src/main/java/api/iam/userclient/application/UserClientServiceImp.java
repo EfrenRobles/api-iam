@@ -1,25 +1,20 @@
+
 package api.iam.userclient.application;
 
-import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import api.shared.domain.Builder;
-import api.shared.domain.Logger;
 import api.shared.domain.exception.ServiceException;
-import api.shared.domain.response.OnResponse;
 import api.iam.userclient.domain.UserClientRepository;
 import api.iam.userclient.domain.response.UserClientResponse;
 import api.iam.client.application.ClientService;
 import api.iam.role.application.RoleService;
 import api.iam.scope.application.ScopeService;
-import api.iam.user.domain.User;
 import api.iam.user.domain.request.UpdateUserRequest;
-import api.iam.user.domain.response.UserResponse;
 import api.iam.userclient.domain.UserClient;
 
 public class UserClientServiceImp implements UserClientService {
+
+    // todo set out dto here instead user
 
     @Autowired
     private ClientService clientService;
@@ -43,10 +38,11 @@ public class UserClientServiceImp implements UserClientService {
     }
 
     @Override
-    public ResponseEntity<?> updateUserClient(UpdateUserRequest data) throws Exception {
+    public UserClientResponse updateUserClient(UpdateUserRequest data) throws Exception {
 
         if (!ifExistAllOrNone(data)) {
-            return OnResponse.onSuccess(null, HttpStatus.OK);
+
+            return null;
         }
 
         clientService.getClient(data.getClientId());
@@ -62,7 +58,7 @@ public class UserClientServiceImp implements UserClientService {
 
         userClient = userClientRepository.save(userClient);
 
-        return OnResponse.onSuccess(mapToUserDto(userClient), HttpStatus.OK);
+        return mapToUserDto(userClient);
     }
 
     private Boolean ifExistAllOrNone(UpdateUserRequest data) {
@@ -93,8 +89,6 @@ public class UserClientServiceImp implements UserClientService {
 
         return false;
     }
-
-
 
     private UserClientResponse mapToUserDto(UserClient data) {
 
