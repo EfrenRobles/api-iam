@@ -3,12 +3,10 @@ package api.iam.role.infrastructure.controller;
 import java.util.UUID;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.Pattern.Flag;
-
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -26,6 +24,7 @@ import api.iam.role.domain.request.AddRoleRequest;
 import api.iam.role.domain.request.UpdateRoleRequest;
 import api.iam.role.domain.response.RoleResponse;
 import api.shared.domain.Builder;
+import api.shared.domain.response.OnResponse;
 import api.shared.application.PageService;
 import api.shared.infrastructure.PaginationConstant;
 
@@ -41,7 +40,7 @@ public class RoleController {
     @GetMapping(params = "roleId")
     public ResponseEntity<?> getRoleByRoleId(@RequestParam(value = "roleId") UUID roleId) throws Exception {
 
-        return roleService.getRole(roleId);
+        return OnResponse.onSuccess(roleService.getRole(roleId), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -65,14 +64,14 @@ public class RoleController {
             .with(u -> u.setRoleName(roleName))
             .build();
 
-        return roleService.getAllRole(pageable, role);
+        return OnResponse.onSuccessPagination(roleService.getAllRole(pageable, role), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<?> postRole(@Valid @RequestBody AddRoleRequest role) throws Exception {
 
-        return roleService.addRole(role);
+        return OnResponse.onSuccess(roleService.addRole(role), HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -83,14 +82,13 @@ public class RoleController {
     ) throws Exception {
         role.setRoleId(roleId);
         
-        return roleService.updateRole(role);
+        return OnResponse.onSuccess(roleService.updateRole(role), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping
     public ResponseEntity<?> deleteRole(@RequestParam UUID roleId) throws Exception {
 
-        return roleService.deleteRole(roleId);
+        return OnResponse.onSuccess(roleService.deleteRole(roleId), HttpStatus.NO_CONTENT);
     }
-
 }

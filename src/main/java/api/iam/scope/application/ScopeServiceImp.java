@@ -1,17 +1,13 @@
 package api.iam.scope.application;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCrypt;
-
 import api.shared.domain.Builder;
 import api.shared.domain.exception.ServiceException;
-import api.shared.domain.response.OnResponse;
 import api.shared.domain.response.PaginationResponse;
 import api.iam.scope.domain.ScopeRepository;
 import api.iam.scope.domain.Scope;
@@ -34,7 +30,7 @@ public class ScopeServiceImp implements ScopeService {
     }
 
     @Override
-    public ResponseEntity<?> getScope(UUID scopeId) throws Exception {
+    public ScopeResponse getScope(UUID scopeId) throws Exception {
 
         Scope scope = scopeRepository.findByScopeId(scopeId);
 
@@ -42,18 +38,18 @@ public class ScopeServiceImp implements ScopeService {
             throw new ServiceException("Scope not found");
         }
 
-        return OnResponse.onSuccess(mapToScopeDto(scope), HttpStatus.OK);
+        return mapToScopeDto(scope);
     }
 
     @Override
-    public ResponseEntity<?> getAllScope(Pageable pageable, ScopeResponse data) {
+    public PaginationResponse getAllScope(Pageable pageable, ScopeResponse data) {
 
         Builder<Scope> builder = Builder.set(Scope.class);
-        
+
         if (data.getScopeName() != null) {
             builder.with(r -> r.setScopeName(data.getScopeName().toUpperCase()));
         }
-        
+
         Scope scope = builder.build();
 
         Page<Scope> scopes = scopeRepository.findAll(pageable, scope);
@@ -64,7 +60,7 @@ public class ScopeServiceImp implements ScopeService {
             .map(r -> mapToScopeDto(r))
             .toList();
 
-        PaginationResponse result = Builder.set(PaginationResponse.class)
+        return Builder.set(PaginationResponse.class)
             .with(p -> p.setData(content))
             .with(p -> p.setPage((short) scopes.getNumber()))
             .with(p -> p.setLimit((byte) scopes.getSize()))
@@ -72,12 +68,26 @@ public class ScopeServiceImp implements ScopeService {
             .with(p -> p.setTotalPages((short) scopes.getTotalPages()))
             .with(p -> p.setLast(scopes.isLast()))
             .build();
-
-        return OnResponse.onSuccessPagination(result, HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<?> addScope(AddScopeRequest data) throws Exception {
+    public List<String> getScopeInScopeName(List<String> scopeList) throws Exception {
+
+        List<String> listCloned = new ArrayList<>(scopeList);
+
+        // Using List<?> to avoid the warning on scopeList.removeAll(scope);
+        List<?> scope = scopeRepository.findScopeInScopeName(listCloned);
+        listCloned.removeAll(scope);
+
+        if (listCloned.size() > 0) {
+            throw new ServiceException("The scope(s): " + listCloned.toString() + " do(es) not exist");
+        }
+
+        return listCloned;
+    }
+
+    @Override
+    public ScopeResponse addScope(AddScopeRequest data) throws Exception {
 
         Scope scope = Builder.set(Scope.class)
             .with(u -> u.setScopeId(UUID.randomUUID()))
@@ -90,11 +100,11 @@ public class ScopeServiceImp implements ScopeService {
             throw new ServiceException("The scope is already registered");
         }
 
-        return OnResponse.onSuccess(mapToScopeDto(scope), HttpStatus.CREATED);
+        return mapToScopeDto(scope);
     }
 
     @Override
-    public ResponseEntity<?> updateScope(UpdateScopeRequest data) throws Exception {
+    public ScopeResponse updateScope(UpdateScopeRequest data) throws Exception {
 
         Boolean needUpdate = false;
 
@@ -109,21 +119,19 @@ public class ScopeServiceImp implements ScopeService {
             needUpdate = true;
         }
 
-        if (!needUpdate) {
-            return OnResponse.onSuccess(mapToScopeDto(scope), HttpStatus.OK);
+        if (needUpdate) {
+            scope = scopeRepository.save(scope);
+
+            if (scope == null) {
+                throw new ServiceException("The scope is already regitered");
+            }
         }
 
-        scope = scopeRepository.save(scope);
-
-        if (scope == null) {
-            throw new ServiceException("The scope is already regitered");
-        }
-
-        return OnResponse.onSuccess(mapToScopeDto(scope), HttpStatus.OK);
+        return mapToScopeDto(scope);
     }
 
     @Override
-    public ResponseEntity<?> deleteScope(UUID scopeId) throws Exception {
+    public UUID deleteScope(UUID scopeId) throws Exception {
 
         Scope scope = scopeRepository.findByScopeId(scopeId);
 
@@ -133,7 +141,7 @@ public class ScopeServiceImp implements ScopeService {
 
         scopeRepository.delete(scope);
 
-        return OnResponse.onSuccess(scopeId, HttpStatus.NO_CONTENT);
+        return scopeId;
     }
 
     private ScopeResponse mapToScopeDto(Scope data) {

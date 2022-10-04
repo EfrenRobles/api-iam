@@ -5,13 +5,8 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCrypt;
-
 import api.shared.domain.Builder;
 import api.shared.domain.exception.ServiceException;
-import api.shared.domain.response.OnResponse;
 import api.shared.domain.response.PaginationResponse;
 import api.iam.role.domain.RoleRepository;
 import api.iam.role.domain.Role;
@@ -34,7 +29,7 @@ public class RoleServiceImp implements RoleService {
     }
 
     @Override
-    public ResponseEntity<?> getRole(UUID roleId) throws Exception {
+    public RoleResponse getRole(UUID roleId) throws Exception {
 
         Role role = roleRepository.findByRoleId(roleId);
 
@@ -42,15 +37,19 @@ public class RoleServiceImp implements RoleService {
             throw new ServiceException("Role not found");
         }
 
-        return OnResponse.onSuccess(mapToRoleDto(role), HttpStatus.OK);
+        return mapToRoleDto(role);
     }
 
     @Override
-    public ResponseEntity<?> getAllRole(Pageable pageable, RoleResponse data) {
+    public PaginationResponse getAllRole(Pageable pageable, RoleResponse data) {
 
-        Role role = Builder.set(Role.class)
-            .with(r -> r.setRoleName(data.getRoleName().toUpperCase()))
-            .build();
+        Builder<Role> builder = Builder.set(Role.class);
+
+        if (data.getRoleName() != null) {
+            builder.with(r -> r.setRoleName(data.getRoleName().toUpperCase()));
+        }
+
+        Role role = builder.build();
 
         Page<Role> roles = roleRepository.findAll(pageable, role);
 
@@ -60,7 +59,7 @@ public class RoleServiceImp implements RoleService {
             .map(r -> mapToRoleDto(r))
             .toList();
 
-        PaginationResponse result = Builder.set(PaginationResponse.class)
+        return Builder.set(PaginationResponse.class)
             .with(p -> p.setData(content))
             .with(p -> p.setPage((short) roles.getNumber()))
             .with(p -> p.setLimit((byte) roles.getSize()))
@@ -68,12 +67,10 @@ public class RoleServiceImp implements RoleService {
             .with(p -> p.setTotalPages((short) roles.getTotalPages()))
             .with(p -> p.setLast(roles.isLast()))
             .build();
-
-        return OnResponse.onSuccessPagination(result, HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<?> addRole(AddRoleRequest data) throws Exception {
+    public RoleResponse addRole(AddRoleRequest data) throws Exception {
 
         Role role = Builder.set(Role.class)
             .with(u -> u.setRoleId(UUID.randomUUID()))
@@ -86,11 +83,11 @@ public class RoleServiceImp implements RoleService {
             throw new ServiceException("The role is already registered");
         }
 
-        return OnResponse.onSuccess(mapToRoleDto(role), HttpStatus.CREATED);
+        return mapToRoleDto(role);
     }
 
     @Override
-    public ResponseEntity<?> updateRole(UpdateRoleRequest data) throws Exception {
+    public RoleResponse updateRole(UpdateRoleRequest data) throws Exception {
 
         Boolean needUpdate = false;
 
@@ -105,21 +102,19 @@ public class RoleServiceImp implements RoleService {
             needUpdate = true;
         }
 
-        if (!needUpdate) {
-            return OnResponse.onSuccess(mapToRoleDto(role), HttpStatus.OK);
+        if (needUpdate) {
+            role = roleRepository.save(role);
+
+            if (role == null) {
+                throw new ServiceException("The role is already regitered");
+            }
         }
 
-        role = roleRepository.save(role);
-
-        if (role == null) {
-            throw new ServiceException("The role is already regitered");
-        }
-
-        return OnResponse.onSuccess(mapToRoleDto(role), HttpStatus.OK);
+        return mapToRoleDto(role);
     }
 
     @Override
-    public ResponseEntity<?> deleteRole(UUID roleId) throws Exception {
+    public UUID deleteRole(UUID roleId) throws Exception {
 
         Role role = roleRepository.findByRoleId(roleId);
 
@@ -129,7 +124,7 @@ public class RoleServiceImp implements RoleService {
 
         roleRepository.delete(role);
 
-        return OnResponse.onSuccess(roleId, HttpStatus.NO_CONTENT);
+        return roleId;
     }
 
     private RoleResponse mapToRoleDto(Role data) {
