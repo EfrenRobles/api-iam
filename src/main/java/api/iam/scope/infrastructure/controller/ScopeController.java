@@ -9,6 +9,7 @@ import javax.validation.constraints.Pattern.Flag;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -26,6 +27,7 @@ import api.iam.scope.domain.request.AddScopeRequest;
 import api.iam.scope.domain.request.UpdateScopeRequest;
 import api.iam.scope.domain.response.ScopeResponse;
 import api.shared.domain.Builder;
+import api.shared.domain.response.OnResponse;
 import api.shared.application.PageService;
 import api.shared.infrastructure.PaginationConstant;
 
@@ -41,7 +43,7 @@ public class ScopeController {
     @GetMapping(params = "scopeId")
     public ResponseEntity<?> getScopeByScopeId(@RequestParam(value = "scopeId") UUID scopeId) throws Exception {
 
-        return scopeService.getScope(scopeId);
+        return OnResponse.onSuccess(scopeService.getScope(scopeId), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -65,14 +67,14 @@ public class ScopeController {
             .with(u -> u.setScopeName(scopeName))
             .build();
 
-        return scopeService.getAllScope(pageable, scope);
+        return OnResponse.onSuccessPagination(scopeService.getAllScope(pageable, scope), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<?> postScope(@Valid @RequestBody AddScopeRequest scope) throws Exception {
 
-        return scopeService.addScope(scope);
+        return OnResponse.onSuccess(scopeService.addScope(scope), HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -83,14 +85,14 @@ public class ScopeController {
     ) throws Exception {
         scope.setScopeId(scopeId);
         
-        return scopeService.updateScope(scope);
+        return OnResponse.onSuccess(scopeService.updateScope(scope), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping
     public ResponseEntity<?> deleteScope(@RequestParam UUID scopeId) throws Exception {
 
-        return scopeService.deleteScope(scopeId);
+        return OnResponse.onSuccess(scopeService.deleteScope(scopeId), HttpStatus.NO_CONTENT);
     }
 
 }
