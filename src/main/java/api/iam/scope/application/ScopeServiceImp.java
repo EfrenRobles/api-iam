@@ -1,5 +1,6 @@
 package api.iam.scope.application;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -77,15 +78,17 @@ public class ScopeServiceImp implements ScopeService {
     @Override
     public ResponseEntity<?> getScopeInScopeName(List<String> scopeList) throws Exception {
 
+        List<String> listCloned = new ArrayList<>(scopeList);
+        
         // Using List<?> to avoid the warning on scopeList.removeAll(scope);
-        List<?> scope = scopeRepository.findScopeInScopeName(scopeList);
-        scopeList.removeAll(scope);
+        List<?> scope = scopeRepository.findScopeInScopeName(listCloned);
+        listCloned.removeAll(scope);
 
-        if (scopeList.size() > 0) {
-            throw new ServiceException("The scope(s): " + scopeList.toString() + " do(es) not exist");
+        if (listCloned.size() > 0) {
+            throw new ServiceException("The scope(s): " + listCloned.toString() + " do(es) not exist");
         }
 
-        return OnResponse.onSuccess(scopeList, HttpStatus.OK);
+        return OnResponse.onSuccess(listCloned, HttpStatus.OK);
     }
 
     @Override
