@@ -40,9 +40,12 @@ public class UserController {
 
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping(params = "userId")
-    public ResponseEntity<?> getUserByUserId(@RequestParam(value = "userId") UUID userId) throws Exception {
+    public ResponseEntity<?> getUserByUserId(
+        @RequestParam(value = "userId") UUID userId,
+        @RequestParam(value = "clientId", required = false) UUID clientId
+    ) throws Exception {
 
-        return OnResponse.onSuccess(userService.getUser(userId), HttpStatus.OK);
+        return OnResponse.onSuccess(userService.getUser(userId, clientId), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

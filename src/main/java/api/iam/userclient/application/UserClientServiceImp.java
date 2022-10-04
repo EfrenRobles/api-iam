@@ -1,6 +1,8 @@
 
 package api.iam.userclient.application;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import api.shared.domain.Builder;
 import api.shared.domain.exception.ServiceException;
@@ -11,6 +13,7 @@ import api.iam.role.application.RoleService;
 import api.iam.scope.application.ScopeService;
 import api.iam.user.domain.request.UpdateUserRequest;
 import api.iam.userclient.domain.UserClient;
+import api.iam.userclient.domain.UserClientId;
 
 public class UserClientServiceImp implements UserClientService {
 
@@ -35,6 +38,30 @@ public class UserClientServiceImp implements UserClientService {
     public static UserClientServiceImp build(UserClientRepository userClientRepository) {
 
         return new UserClientServiceImp(userClientRepository);
+    }
+
+    @Override
+    public UserClientResponse getUserClient(UUID userId, UUID clientId) throws Exception {
+
+        clientService.getClient(clientId);
+
+        UserClientId userClientId = Builder.set(UserClientId.class)
+            .with(u -> u.setUserId(userId))
+            .with(u -> u.setClientId(clientId))
+            .build();
+
+        UserClient userClient = userClientRepository.findById(userClientId);
+
+        if (userClient == null) {
+            return Builder.set(UserClientResponse.class).build();
+        }
+
+        return Builder.set(UserClientResponse.class)
+            .with(u -> u.setUserId(userClient.getUserId()))
+            .with(u -> u.setClientId(userClient.getClientId()))
+            .with(u -> u.setRoleId(userClient.getRoleId()))
+            .with(u -> u.setScopes(userClient.getScopes()))
+            .build();
     }
 
     @Override

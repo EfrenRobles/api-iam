@@ -12,7 +12,7 @@ import api.shared.domain.response.PaginationResponse;
 
 public interface UserService {
 
-    public UserResponse getUser(UUID userId) throws Exception;
+    public Object getUser(UUID userId, UUID clientId) throws Exception;
 
     public PaginationResponse getAllUser(Pageable pageable, UserResponse user);
 

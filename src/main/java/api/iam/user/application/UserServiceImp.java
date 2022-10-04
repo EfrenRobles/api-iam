@@ -40,7 +40,7 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public UserResponse getUser(UUID userId) throws Exception {
+    public Object getUser(UUID userId, UUID clientId) throws Exception {
 
         User user = userRepository.findByUserId(userId);
 
@@ -48,7 +48,22 @@ public class UserServiceImp implements UserService {
             throw new ServiceException("User not found");
         }
 
-        return mapToUserDto(user);
+        if (clientId == null) {
+            return mapToUserDto(user);
+        }
+        
+        UserClientResponse response = userClientService.getUserClient(userId, clientId);
+
+        return Builder.set(UpdateUserRequest.class)
+                .with(u -> u.setUserId(user.getUserId()))
+                .with(u -> u.setClientId(response.getClientId()))
+                .with(u -> u.setRoleId(response.getRoleId()))
+                .with(u -> u.setUserFirstName(user.getUserFirstName()))
+                .with(u -> u.setUserLastName(user.getUserLastName()))
+                .with(u -> u.setUserEmail(user.getUserEmail()))
+                .with(u -> u.setUserPassword("Secret"))
+                .with(u -> u.setScopes(response.getScopes()))
+                .build();        
     }
 
     @Override

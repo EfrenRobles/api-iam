@@ -1,8 +1,10 @@
 package api.iam.userclient.domain;
 
+import java.util.UUID;
+
 public interface UserClientRepository {
 
-    // pending get
+    public UserClient findById(UserClientId userClientId) throws Exception;
 
     public UserClient save(UserClient userClient) throws Exception;
 }
