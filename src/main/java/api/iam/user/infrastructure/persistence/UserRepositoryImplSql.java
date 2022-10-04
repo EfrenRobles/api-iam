@@ -1,6 +1,5 @@
 package api.iam.user.infrastructure.persistence;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -12,8 +11,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -25,10 +22,9 @@ import api.shared.domain.exception.RepositoryException;
 import api.shared.infrastructure.persistence.Pagination;
 
 import api.iam.user.domain.User;
-import api.iam.user.infrastructure.DomainPersistence;
 
 @Component
-public class UserRepositoryImplSql implements DomainPersistence {
+public class UserRepositoryImplSql implements api.iam.user.domain.UserRepository {
 
     @PersistenceContext
     private EntityManager entityManager;

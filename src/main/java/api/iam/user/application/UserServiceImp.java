@@ -3,6 +3,7 @@ package api.iam.user.application;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -10,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import api.shared.domain.Builder;
-import api.shared.domain.Logger;
 import api.shared.domain.exception.ServiceException;
 import api.shared.domain.response.OnResponse;
 import api.shared.domain.response.PaginationResponse;
@@ -19,8 +19,12 @@ import api.iam.user.domain.User;
 import api.iam.user.domain.request.AddUserRequest;
 import api.iam.user.domain.request.UpdateUserRequest;
 import api.iam.user.domain.response.UserResponse;
+import api.iam.userclient.application.UserClientService;
 
 public class UserServiceImp implements UserService {
+
+    @Autowired
+    private UserClientService userClientService;
 
     private UserRepository userRepository;
 
@@ -97,10 +101,39 @@ public class UserServiceImp implements UserService {
 
     @Override
     public ResponseEntity<?> updateUser(UpdateUserRequest data) throws Exception {
-
-        Boolean needUpdate = false;
-
         User user = userRepository.findByUserId(data.getUserId());
+
+        if (ifExist(user, data)) {
+            user = userRepository.save(user);
+        }
+
+        if (user == null) {
+            throw new ServiceException("The user email is already registered");
+        }
+
+        ResponseEntity<?> response = userClientService.updateUserClient(data);
+
+        if (response.getBody().toString().contains("data=null")) {
+            return OnResponse.onSuccess(mapToUserDto(user), HttpStatus.OK);
+        }
+
+        final User userFinal = user;
+        UpdateUserRequest result = Builder.set(UpdateUserRequest.class)
+            .with(u -> u.setUserId(data.getUserId()))
+            .with(u -> u.setClientId(data.getClientId()))
+            .with(u -> u.setRoleId(data.getRoleId()))
+            .with(u -> u.setUserFirstName(userFinal.getUserFirstName()))
+            .with(u -> u.setUserLastName(userFinal.getUserLastName()))
+            .with(u -> u.setUserEmail(userFinal.getUserEmail()))
+            .with(u -> u.setUserPassword("Secret"))
+            .with(u -> u.setScopes(data.getScopes()))
+            .build();
+
+        return OnResponse.onSuccess(result, HttpStatus.OK);
+    }
+
+    private Boolean ifExist(User user, UpdateUserRequest data) {
+        Boolean needUpdate = false;
 
         if (user == null) {
             throw new ServiceException("The user was not found");
@@ -126,17 +159,7 @@ public class UserServiceImp implements UserService {
             needUpdate = true;
         }
 
-        if (!needUpdate) {
-            return OnResponse.onSuccess(mapToUserDto(user), HttpStatus.OK);
-        }
-
-        user = userRepository.save(user);
-
-        if (user == null) {
-            throw new ServiceException("The user email is already regitered");
-        }
-
-        return OnResponse.onSuccess(mapToUserDto(user), HttpStatus.OK);
+        return needUpdate;
     }
 
     @Override

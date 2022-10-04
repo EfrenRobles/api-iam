@@ -6,9 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import api.iam.user.domain.User;
 
-public interface UserRepository extends JpaRepository<User, UUID> {
-	
-	User findByUserEmail(String email);
-	
-	User findByUserId(UUID userId);
+interface UserRepository extends JpaRepository<User, UUID> {
+
+    User findByUserEmail(String email);
+
+    User findByUserId(UUID userId);
 }
