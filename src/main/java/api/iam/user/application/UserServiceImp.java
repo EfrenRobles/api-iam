@@ -6,13 +6,11 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import api.shared.domain.Builder;
 import api.shared.domain.exception.ServiceException;
-import api.shared.domain.response.OnResponse;
 import api.shared.domain.response.PaginationResponse;
 import api.iam.user.domain.UserRepository;
 import api.iam.user.domain.User;
@@ -22,6 +20,8 @@ import api.iam.user.domain.response.UserResponse;
 import api.iam.userclient.application.UserClientService;
 
 public class UserServiceImp implements UserService {
+
+    // todo: set out dto here instead userClient
 
     @Autowired
     private UserClientService userClientService;
@@ -39,7 +39,7 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public ResponseEntity<?> getUser(UUID userId) throws Exception {
+    public UserResponse getUser(UUID userId) throws Exception {
 
         User user = userRepository.findByUserId(userId);
 
@@ -47,11 +47,11 @@ public class UserServiceImp implements UserService {
             throw new ServiceException("User not found");
         }
 
-        return OnResponse.onSuccess(mapToUserDto(user), HttpStatus.OK);
+        return mapToUserDto(user);
     }
 
     @Override
-    public ResponseEntity<?> getAllUser(Pageable pageable, UserResponse data) {
+    public PaginationResponse getAllUser(Pageable pageable, UserResponse data) {
 
         User user = Builder.set(User.class)
             .with(u -> u.setUserFirstName(data.getUserFirstName()))
@@ -67,7 +67,7 @@ public class UserServiceImp implements UserService {
             .map(u -> mapToUserDto(u))
             .toList();
 
-        PaginationResponse result = Builder.set(PaginationResponse.class)
+        return Builder.set(PaginationResponse.class)
             .with(p -> p.setData(content))
             .with(p -> p.setPage((short) users.getNumber()))
             .with(p -> p.setLimit((byte) users.getSize()))
@@ -75,12 +75,10 @@ public class UserServiceImp implements UserService {
             .with(p -> p.setTotalPages((short) users.getTotalPages()))
             .with(p -> p.setLast(users.isLast()))
             .build();
-
-        return OnResponse.onSuccessPagination(result, HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<?> addUser(AddUserRequest data) throws Exception {
+    public UserResponse addUser(AddUserRequest data) throws Exception {
 
         User user = Builder.set(User.class)
             .with(u -> u.setUserId(UUID.randomUUID()))
@@ -96,11 +94,11 @@ public class UserServiceImp implements UserService {
             throw new ServiceException("The user email is already registered");
         }
 
-        return OnResponse.onSuccess(mapToUserDto(user), HttpStatus.CREATED);
+        return mapToUserDto(user);
     }
 
     @Override
-    public ResponseEntity<?> updateUser(UpdateUserRequest data) throws Exception {
+    public Object updateUser(UpdateUserRequest data) throws Exception {
         User user = userRepository.findByUserId(data.getUserId());
 
         if (ifExist(user, data)) {
@@ -114,11 +112,13 @@ public class UserServiceImp implements UserService {
         ResponseEntity<?> response = userClientService.updateUserClient(data);
 
         if (response.getBody().toString().contains("data=null")) {
-            return OnResponse.onSuccess(mapToUserDto(user), HttpStatus.OK);
+
+            return mapToUserDto(user);
         }
 
         final User userFinal = user;
-        UpdateUserRequest result = Builder.set(UpdateUserRequest.class)
+
+        return Builder.set(UpdateUserRequest.class)
             .with(u -> u.setUserId(data.getUserId()))
             .with(u -> u.setClientId(data.getClientId()))
             .with(u -> u.setRoleId(data.getRoleId()))
@@ -128,8 +128,6 @@ public class UserServiceImp implements UserService {
             .with(u -> u.setUserPassword("Secret"))
             .with(u -> u.setScopes(data.getScopes()))
             .build();
-
-        return OnResponse.onSuccess(result, HttpStatus.OK);
     }
 
     private Boolean ifExist(User user, UpdateUserRequest data) {
@@ -163,7 +161,7 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public ResponseEntity<?> deleteUser(UUID userId) throws Exception {
+    public UUID deleteUser(UUID userId) throws Exception {
 
         User user = userRepository.findByUserId(userId);
 
@@ -173,7 +171,7 @@ public class UserServiceImp implements UserService {
 
         userRepository.delete(user);
 
-        return OnResponse.onSuccess(userId, HttpStatus.NO_CONTENT);
+        return userId;
     }
 
     private UserResponse mapToUserDto(User data) {

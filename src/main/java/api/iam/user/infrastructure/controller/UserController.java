@@ -8,6 +8,7 @@ import javax.validation.constraints.Pattern.Flag;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -26,6 +27,7 @@ import api.iam.user.domain.request.UpdateUserRequest;
 import api.iam.user.domain.response.UserResponse;
 import api.shared.application.PageService;
 import api.shared.domain.Builder;
+import api.shared.domain.response.OnResponse;
 import api.shared.infrastructure.PaginationConstant;
 
 @RestController
@@ -40,7 +42,7 @@ public class UserController {
     @GetMapping(params = "userId")
     public ResponseEntity<?> getUserByUserId(@RequestParam(value = "userId") UUID userId) throws Exception {
 
-        return userService.getUser(userId);
+        return OnResponse.onSuccess(userService.getUser(userId), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -69,14 +71,14 @@ public class UserController {
             .with(u -> u.setUserEmail(userEmail))
             .build();
 
-        return userService.getAllUser(pageable, user);
+        return OnResponse.onSuccessPagination(userService.getAllUser(pageable, user), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<?> postUser(@Valid @RequestBody AddUserRequest user) throws Exception {
 
-        return userService.addUser(user);
+        return OnResponse.onSuccess(userService.addUser(user), HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -87,14 +89,13 @@ public class UserController {
     ) throws Exception {
         user.setUserId(userId);
         
-        return userService.updateUser(user);
+        return OnResponse.onSuccess(userService.updateUser(user), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping
     public ResponseEntity<?> deleteUser(@RequestParam UUID userId) throws Exception {
 
-        return userService.deleteUser(userId);
+        return OnResponse.onSuccess(userService.deleteUser(userId), HttpStatus.NO_CONTENT);
     }
-
 }
