@@ -43,9 +43,13 @@ public class RoleServiceImp implements RoleService {
     @Override
     public PaginationResponse getAllRole(Pageable pageable, RoleResponse data) {
 
-        Role role = Builder.set(Role.class)
-            .with(r -> r.setRoleName(data.getRoleName().toUpperCase()))
-            .build();
+        Builder<Role> builder = Builder.set(Role.class);
+
+        if (data.getRoleName() != null) {
+            builder.with(r -> r.setRoleName(data.getRoleName().toUpperCase()));
+        }
+
+        Role role = builder.build();
 
         Page<Role> roles = roleRepository.findAll(pageable, role);
 

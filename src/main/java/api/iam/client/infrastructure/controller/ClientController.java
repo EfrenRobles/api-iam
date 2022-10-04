@@ -3,12 +3,10 @@ package api.iam.client.infrastructure.controller;
 import java.util.UUID;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.Pattern.Flag;
-
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -26,6 +24,7 @@ import api.iam.client.domain.request.AddClientRequest;
 import api.iam.client.domain.request.UpdateClientRequest;
 import api.iam.client.domain.response.ClientResponse;
 import api.shared.domain.Builder;
+import api.shared.domain.response.OnResponse;
 import api.shared.application.PageService;
 import api.shared.infrastructure.PaginationConstant;
 
@@ -41,7 +40,7 @@ public class ClientController {
     @GetMapping(params = "clientId")
     public ResponseEntity<?> getClientByClientId(@RequestParam(value = "clientId") UUID clientId) throws Exception {
 
-        return clientService.getClient(clientId);
+        return OnResponse.onSuccess(clientService.getClient(clientId), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -67,14 +66,15 @@ public class ClientController {
             .with(u -> u.setClientName(clientName))
             .build();
 
-        return clientService.getAllClient(pageable, client);
+        return OnResponse.onSuccessPagination(clientService.getAllClient(pageable, client), HttpStatus.OK);
+
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<?> postClient(@Valid @RequestBody AddClientRequest client) throws Exception {
 
-        return clientService.addClient(client);
+        return OnResponse.onSuccess(clientService.addClient(client), HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -84,15 +84,14 @@ public class ClientController {
         @Valid @RequestBody UpdateClientRequest client
     ) throws Exception {
         client.setClientId(clientId);
-        
-        return clientService.updateClient(client);
+
+        return OnResponse.onSuccess(clientService.updateClient(client), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping
     public ResponseEntity<?> deleteClient(@RequestParam UUID clientId) throws Exception {
 
-        return clientService.deleteClient(clientId);
+        return OnResponse.onSuccess(clientService.deleteClient(clientId), HttpStatus.NO_CONTENT);
     }
-
 }

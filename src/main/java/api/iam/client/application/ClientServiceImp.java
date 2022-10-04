@@ -5,13 +5,8 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCrypt;
-
 import api.shared.domain.Builder;
 import api.shared.domain.exception.ServiceException;
-import api.shared.domain.response.OnResponse;
 import api.shared.domain.response.PaginationResponse;
 import api.iam.client.domain.ClientRepository;
 import api.iam.client.domain.Client;
@@ -34,7 +29,7 @@ public class ClientServiceImp implements ClientService {
     }
 
     @Override
-    public ResponseEntity<?> getClient(UUID clientId) throws Exception {
+    public ClientResponse getClient(UUID clientId) throws Exception {
 
         Client client = clientRepository.findByClientId(clientId);
 
@@ -42,11 +37,11 @@ public class ClientServiceImp implements ClientService {
             throw new ServiceException("Client not found");
         }
 
-        return OnResponse.onSuccess(mapToClientDto(client), HttpStatus.OK);
+        return mapToClientDto(client);
     }
 
     @Override
-    public ResponseEntity<?> getAllClient(Pageable pageable, ClientResponse data) {
+    public PaginationResponse getAllClient(Pageable pageable, ClientResponse data) {
 
         Builder<Client> builder = Builder.set(Client.class);
 
@@ -68,7 +63,7 @@ public class ClientServiceImp implements ClientService {
             .map(r -> mapToClientDto(r))
             .toList();
 
-        PaginationResponse result = Builder.set(PaginationResponse.class)
+        return Builder.set(PaginationResponse.class)
             .with(p -> p.setData(content))
             .with(p -> p.setPage((short) clients.getNumber()))
             .with(p -> p.setLimit((byte) clients.getSize()))
@@ -76,12 +71,10 @@ public class ClientServiceImp implements ClientService {
             .with(p -> p.setTotalPages((short) clients.getTotalPages()))
             .with(p -> p.setLast(clients.isLast()))
             .build();
-
-        return OnResponse.onSuccessPagination(result, HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<?> addClient(AddClientRequest data) throws Exception {
+    public ClientResponse addClient(AddClientRequest data) throws Exception {
 
         Client client = Builder.set(Client.class)
             .with(u -> u.setClientId(UUID.randomUUID()))
@@ -95,11 +88,11 @@ public class ClientServiceImp implements ClientService {
             throw new ServiceException("The client is already registered");
         }
 
-        return OnResponse.onSuccess(mapToClientDto(client), HttpStatus.CREATED);
+        return mapToClientDto(client);
     }
 
     @Override
-    public ResponseEntity<?> updateClient(UpdateClientRequest data) throws Exception {
+    public ClientResponse updateClient(UpdateClientRequest data) throws Exception {
 
         Boolean needUpdate = false;
 
@@ -119,21 +112,19 @@ public class ClientServiceImp implements ClientService {
             needUpdate = true;
         }
 
-        if (!needUpdate) {
-            return OnResponse.onSuccess(mapToClientDto(client), HttpStatus.OK);
+        if (needUpdate) {
+            client = clientRepository.save(client);
+
+            if (client == null) {
+                throw new ServiceException("The client is already regitered");
+            }
         }
 
-        client = clientRepository.save(client);
-
-        if (client == null) {
-            throw new ServiceException("The client is already regitered");
-        }
-
-        return OnResponse.onSuccess(mapToClientDto(client), HttpStatus.OK);
+        return mapToClientDto(client);
     }
 
     @Override
-    public ResponseEntity<?> deleteClient(UUID clientId) throws Exception {
+    public UUID deleteClient(UUID clientId) throws Exception {
 
         Client client = clientRepository.findByClientId(clientId);
 
@@ -143,7 +134,7 @@ public class ClientServiceImp implements ClientService {
 
         clientRepository.delete(client);
 
-        return OnResponse.onSuccess(clientId, HttpStatus.NO_CONTENT);
+        return clientId;
     }
 
     private ClientResponse mapToClientDto(Client data) {
