@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +26,7 @@ import api.shared.domain.Builder;
 import api.shared.domain.response.OnResponse;
 import api.shared.application.PageService;
 import api.shared.infrastructure.PaginationConstant;
+import api.shared.infrastructure.annotation.Scope;
 
 @RestController
 @RequestMapping("/api/v1/client")
@@ -36,14 +36,14 @@ public class ClientController {
     @Autowired
     private ClientService clientService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "CLIENT.VIEW")
     @GetMapping(params = "clientId")
     public ResponseEntity<?> getClientByClientId(@RequestParam(value = "clientId") UUID clientId) throws Exception {
 
         return OnResponse.onSuccess(clientService.getClient(clientId), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "CLIENT.VIEW.LIST")
     @GetMapping
     public ResponseEntity<?> getClientList(
         @RequestParam(value = "page", defaultValue = PaginationConstant.PAGE_DEFAULT, required = false) Short page,
@@ -70,14 +70,14 @@ public class ClientController {
 
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "CLIENT.ADD")
     @PostMapping
     public ResponseEntity<?> postClient(@Valid @RequestBody AddClientRequest client) throws Exception {
 
         return OnResponse.onSuccess(clientService.addClient(client), HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "CLIENT.EDIT")
     @PatchMapping
     public ResponseEntity<?> patchClient(
         @RequestParam UUID clientId,
@@ -88,7 +88,7 @@ public class ClientController {
         return OnResponse.onSuccess(clientService.updateClient(client), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "CLIENT.DELETE")
     @DeleteMapping
     public ResponseEntity<?> deleteClient(@RequestParam UUID clientId) throws Exception {
 

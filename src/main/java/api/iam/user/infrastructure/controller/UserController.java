@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +28,7 @@ import api.shared.application.PageService;
 import api.shared.domain.Builder;
 import api.shared.domain.response.OnResponse;
 import api.shared.infrastructure.PaginationConstant;
+import api.shared.infrastructure.annotation.Scope;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -38,17 +38,18 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @Scope(value = "USER.VIEW")
     @GetMapping(params = "userId")
     public ResponseEntity<?> getUserByUserId(
         @RequestParam(value = "userId") UUID userId,
-        @RequestParam(value = "clientId", required = false) UUID clientId
+        @RequestParam(value = "clientId", required = false) UUID clientId,
+        @RequestParam(value = "isRequest", required = false) Boolean isRequest
     ) throws Exception {
 
         return OnResponse.onSuccess(userService.getUser(userId, clientId), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "USER.VIEW.LIST")
     @GetMapping
     public ResponseEntity<?> getUserList(
         @RequestParam(value = "page", defaultValue = PaginationConstant.PAGE_DEFAULT, required = false) Short page,
@@ -77,14 +78,14 @@ public class UserController {
         return OnResponse.onSuccessPagination(userService.getAllUser(pageable, user), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "USER.ADD")
     @PostMapping
     public ResponseEntity<?> postUser(@Valid @RequestBody AddUserRequest user) throws Exception {
 
         return OnResponse.onSuccess(userService.addUser(user), HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "USER.EDIT")
     @PatchMapping
     public ResponseEntity<?> patchUser(
         @RequestParam UUID userId,
@@ -95,7 +96,7 @@ public class UserController {
         return OnResponse.onSuccess(userService.updateUser(user), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "USER.DELETE")
     @DeleteMapping
     public ResponseEntity<?> deleteUser(@RequestParam UUID userId) throws Exception {
 
