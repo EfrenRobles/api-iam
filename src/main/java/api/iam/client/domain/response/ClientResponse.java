@@ -2,10 +2,6 @@ package api.iam.client.domain.response;
 
 import java.util.UUID;
 
-import javax.validation.constraints.NotBlank;
-
-import org.hibernate.validator.constraints.Length;
-
 public class ClientResponse {
 
     private UUID clientId;

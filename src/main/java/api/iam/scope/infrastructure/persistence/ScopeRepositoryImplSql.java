@@ -21,10 +21,9 @@ import api.shared.domain.Logger;
 import api.shared.domain.exception.RepositoryException;
 import api.shared.infrastructure.persistence.Pagination;
 import api.iam.scope.domain.Scope;
-import api.iam.scope.infrastructure.DomainPersistence;
 
 @Component
-public class ScopeRepositoryImplSql implements DomainPersistence {
+public class ScopeRepositoryImplSql implements api.iam.scope.domain.ScopeRepository {
 
     @PersistenceContext
     private EntityManager entityManager;

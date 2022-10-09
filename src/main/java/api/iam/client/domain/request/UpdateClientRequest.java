@@ -2,10 +2,6 @@ package api.iam.client.domain.request;
 
 import java.util.UUID;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern.Flag;
-
 import org.hibernate.validator.constraints.Length;
 import org.springframework.lang.Nullable;
 
