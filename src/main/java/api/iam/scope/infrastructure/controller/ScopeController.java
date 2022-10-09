@@ -3,15 +3,11 @@ package api.iam.scope.infrastructure.controller;
 import java.util.UUID;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.Pattern.Flag;
-
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +26,7 @@ import api.shared.domain.Builder;
 import api.shared.domain.response.OnResponse;
 import api.shared.application.PageService;
 import api.shared.infrastructure.PaginationConstant;
+import api.shared.infrastructure.annotation.Scope;
 
 @RestController
 @RequestMapping("/api/v1/scope")
@@ -39,14 +36,14 @@ public class ScopeController {
     @Autowired
     private ScopeService scopeService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "SCOPE.VIEW")
     @GetMapping(params = "scopeId")
     public ResponseEntity<?> getScopeByScopeId(@RequestParam(value = "scopeId") UUID scopeId) throws Exception {
 
         return OnResponse.onSuccess(scopeService.getScope(scopeId), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "SCOPE.VIEW.LIST")
     @GetMapping
     public ResponseEntity<?> getScopeList(
         @RequestParam(value = "page", defaultValue = PaginationConstant.PAGE_DEFAULT, required = false) Short page,
@@ -70,14 +67,14 @@ public class ScopeController {
         return OnResponse.onSuccessPagination(scopeService.getAllScope(pageable, scope), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "SCOPE.ADD")
     @PostMapping
     public ResponseEntity<?> postScope(@Valid @RequestBody AddScopeRequest scope) throws Exception {
 
         return OnResponse.onSuccess(scopeService.addScope(scope), HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "SCOPE.EDIT")
     @PatchMapping
     public ResponseEntity<?> patchScope(
         @RequestParam UUID scopeId,
@@ -88,7 +85,7 @@ public class ScopeController {
         return OnResponse.onSuccess(scopeService.updateScope(scope), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "SCOPE.DELETE")
     @DeleteMapping
     public ResponseEntity<?> deleteScope(@RequestParam UUID scopeId) throws Exception {
 

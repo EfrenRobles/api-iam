@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +26,7 @@ import api.shared.domain.Builder;
 import api.shared.domain.response.OnResponse;
 import api.shared.application.PageService;
 import api.shared.infrastructure.PaginationConstant;
+import api.shared.infrastructure.annotation.Scope;
 
 @RestController
 @RequestMapping("/api/v1/role")
@@ -36,14 +36,14 @@ public class RoleController {
     @Autowired
     private RoleService roleService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "ROLE.VIEW")
     @GetMapping(params = "roleId")
     public ResponseEntity<?> getRoleByRoleId(@RequestParam(value = "roleId") UUID roleId) throws Exception {
 
         return OnResponse.onSuccess(roleService.getRole(roleId), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "ROLE.VIEW.LIST")
     @GetMapping
     public ResponseEntity<?> getRoleList(
         @RequestParam(value = "page", defaultValue = PaginationConstant.PAGE_DEFAULT, required = false) Short page,
@@ -67,14 +67,14 @@ public class RoleController {
         return OnResponse.onSuccessPagination(roleService.getAllRole(pageable, role), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "ROLE.ADD")
     @PostMapping
     public ResponseEntity<?> postRole(@Valid @RequestBody AddRoleRequest role) throws Exception {
 
         return OnResponse.onSuccess(roleService.addRole(role), HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "ROLE.EDIT")
     @PatchMapping
     public ResponseEntity<?> patchRole(
         @RequestParam UUID roleId,
@@ -85,7 +85,7 @@ public class RoleController {
         return OnResponse.onSuccess(roleService.updateRole(role), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @Scope(value = "ROLE.DELETE")
     @DeleteMapping
     public ResponseEntity<?> deleteRole(@RequestParam UUID roleId) throws Exception {
 

@@ -12,13 +12,9 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import api.shared.domain.Logger;
@@ -26,10 +22,9 @@ import api.shared.domain.exception.RepositoryException;
 import api.shared.infrastructure.persistence.Pagination;
 
 import api.iam.role.domain.Role;
-import api.iam.role.infrastructure.DomainPersistence;
 
 @Component
-public class RoleRepositoryImplSql implements DomainPersistence {
+public class RoleRepositoryImplSql implements api.iam.role.domain.RoleRepository {
 
     @PersistenceContext
     private EntityManager entityManager;
