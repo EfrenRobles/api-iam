@@ -1,0 +1,3 @@
+[submodule "src/main/java/api/shared"]
+	path = src/main/java/api/shared
+	url = https://github.com/EfrenRobles/api-shared.git
